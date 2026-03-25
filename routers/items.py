@@ -34,12 +34,12 @@ def read_items(commons: dict = Depends(common_params)):
 @router.get("/{item_id}")
 def read_item(item_id: int):
     if item_id not in fake_db:
-        raise HTTPException(status_code=404, detail="아이템을 찾을수 없습니다")
+        raise HTTPException(status_code=404, detail="아이템을 찾을 수 없습니다")
     return fake_db[item_id]
 
 @router.post("", response_model=ItemResponse)
 def create_item(item: ItemCreate):
     if item.price <= 0 :
-        raise HTTPException(status_code=404, detail="가격은 0보다 커야 합니다")
+        raise HTTPException(status_code=400, detail="가격은 0보다 커야 합니다")
     return item
 
