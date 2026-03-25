@@ -2,7 +2,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(
+    title = "FastAPI 학습 프로젝트",
+    description = "dongyuri의 FastAPI 학습 기록",
+    version = "0.1.0"
+)
 
 @app.get("/")
 def read_root():
