@@ -8,7 +8,20 @@ app = FastAPI(
     version = "0.1.0"
 )
 
-@app.get("/")
+# 입력 스키마
+class ItemCreate(BaseModel):
+    name: str
+    price: float
+    is_available: bool = True
+    secret_token: str
+
+# 응답 스키마
+class ItemResponse(BaseModel):
+    name: str
+    price: float
+    is_available: bool
+
+@app.get("/", tags=["root"])
 def read_root():
     return {"message": "Hello, FastAPI!"}
 
@@ -17,18 +30,9 @@ def read_root():
 def read_item(item_id: int):
     return {"item_id": item_id}
 
-# Query Parameter
-@app.get("/search")
-def search_item(q: str, limit: int=10):
-    return {"query": q, "limit": limit}
-
-# Pydantic 모델정의
-class Item(BaseModel):
-    name: str
-    price: float
-    is_available: bool = True
 
 # POST 요청
-@app.post("/items")
-def create_item(item: Item):
-    return {"message": "아이템 생성완료", "item": item}
+@app.post("/items", response_model=ItemResponse, tags=["items"])
+def create_item(item: ItemCreate):
+    return item
+
