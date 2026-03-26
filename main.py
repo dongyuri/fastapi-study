@@ -1,6 +1,7 @@
 
-from fastapi import FastAPI, Depends
-from routers import items
+from fastapi import FastAPI
+from app.routers import items
+from app.database import init_db
 
 
 app = FastAPI(
@@ -10,6 +11,10 @@ app = FastAPI(
 )
 
 app.include_router(items.router)
+
+@app.on_event("startup")
+def startup():
+    init_db()
 
 
 @app.get("/", tags=["root"])
