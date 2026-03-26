@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from app.database import get_connection
 
 router = APIRouter(
     prefix="/items",
@@ -10,36 +12,98 @@ class ItemCreate(BaseModel):
     name: str
     price: float
     is_available: bool = True
-    secret_token: str
 
 class ItemResponse(BaseModel):
+    id: int
     name: str
     price: float
     is_available: bool
 
-
-# 임시 데이터
-fake_db = {
-    1: {"name": "커피", "price": 4500.0, "is_available": True},
-    2: {"name": "녹차", "price": 3000.0, "is_available": False}
-}
-
-def common_params(skip: int = 0, limit: int = 10):
-    return {"skip": skip, "limit": limit}
-
-@router.get("")
-def read_items(commons: dict = Depends(common_params)):
-    return {"params": commons}
-
-@router.get("/{item_id}")
-def read_item(item_id: int):
-    if item_id not in fake_db:
-        raise HTTPException(status_code=404, detail="아이템을 찾을 수 없습니다")
-    return fake_db[item_id]
-
+# CREATE
 @router.post("", response_model=ItemResponse)
 def create_item(item: ItemCreate):
-    if item.price <= 0 :
-        raise HTTPException(status_code=400, detail="가격은 0보다 커야 합니다")
-    return item
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO items (name, price, is_available)
+        VALUES (?, ?, ?)
+        """, (item.name, item.price, item.is_available))
+
+    conn.commit()
+    item_id = cursor.lastrowid
+    conn.close()
+
+    return {**item.dict(), "id": item_id}
+
+# READ ALL
+@router.get("", response_model=list[ItemResponse])
+def read_items():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM items")
+    items = cursor.fetchall()
+    conn.close()
+
+    return [dict(item) for item in items]
+
+# READ ONE
+@router.get("/{item_id}", response_model=ItemResponse)
+def read_item(item_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM items WHERE id = ?", (item_id,))
+    item = cursor.fetchone()
+    conn.close()
+
+    if item is None:
+        raise HTTPException(status_code=404, detail="아이템을 찾을 수 없습니다")
+
+    return dict(item)
+
+# UPDATE
+@router.put("/{item_id}", response_model=ItemResponse)
+def update_item(item_id: int, item: ItemCreate):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM items WHERE id = ?", (item_id,))
+    existing = cursor.fetchone()
+
+    if existing is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="아이템을 찾을 수 없습니다")
+
+    cursor.execute("""
+        UPDATE items
+        SET name = ?, price = ?, is_available = ?
+        WHERE id = ?
+    """, (item.name, item.price, item.is_available, item_id))
+
+    conn.commit()
+    conn.close()
+
+    return {**item.dict(), "id": item_id}
+
+# DELETE
+@router.delete("/{item_id}")
+def delete_item(item_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM items WHERE id = ?", (item_id,))
+    existing = cursor.fetchone()
+
+    if existing is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="아이템을 찾을 수 없습니다")
+
+    cursor.execute("DELETE FROM items WHERE id = ?", (item_id,))
+    conn.commit()
+    conn.close()
+
+    return {"message": "아이템이 삭제되었습니다"}
+
 
