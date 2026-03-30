@@ -1,0 +1,10 @@
+services:
+  api:
+    build: .
+    container_name: fastapi-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fastapi.db:/app/fastapi.db
+    environment:
+      - SECRET_KEY=학습용-시크릿-키-프로덕션에서는-환경변수로-관리
