@@ -1,6 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from app.routers import items, users
 from app.database import init_db
 import logging
@@ -14,11 +15,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    logger.info("서버 시작 및 DB 초기화 완료")
+    yield
+
+
 app = FastAPI(
     title = "FastAPI 학습 프로젝트",
     description = "dongyuri의 FastAPI 학습 기록",
-    version = "0.1.0"
+    version = "0.1.0",
+    lifespan=lifespan
 )
+
 
 # CORS 미들웨어
 app.add_middleware(
@@ -30,14 +40,8 @@ app.add_middleware(
 )
 
 
-
 app.include_router(items.router)
 app.include_router(users.router)
-
-@app.on_event("startup")
-def startup():
-    init_db()
-    logger.info("서버 시작 및 DB 초기화 완료")
 
 
 @app.get("/", tags=["root"])

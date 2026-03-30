@@ -22,6 +22,9 @@ class ItemResponse(BaseModel):
 # CREATE
 @router.post("", response_model=ItemResponse)
 def create_item(item: ItemCreate):
+    if item.price <= 0:
+        raise HTTPException(status_code=400, detail="가격은 0보다 커야 합니다")
+
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -34,7 +37,7 @@ def create_item(item: ItemCreate):
     item_id = cursor.lastrowid
     conn.close()
 
-    return {**item.dict(), "id": item_id}
+    return {**item.model_dump(), "id": item_id}
 
 # READ ALL
 @router.get("", response_model=list[ItemResponse])
