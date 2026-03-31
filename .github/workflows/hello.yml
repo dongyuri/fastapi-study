@@ -1,0 +1,25 @@
+
+name: Hello GitHub Actions
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 인사말 출력
+        run: echo "Hello GitHub Actions !!!"
+
+      - name: 현재 날짜 출력
+        run: date
+
+      - name: 파일 목록 출력
+        run: ls -al
+
