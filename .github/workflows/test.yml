@@ -11,7 +11,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-lattest
+    runs-on: ubuntu-latest
 
   steps:
     - name: 저장소 체크아웃
