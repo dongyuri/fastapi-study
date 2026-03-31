@@ -3,6 +3,17 @@
 import pytest
 from fastapi.testclient import TestClient
 from main import app
+from app.database import get_connection, init_db
+
+@pytest.fixture(autouse=True)
+def setup_db():
+    init_db()                    # 테이블 생성
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM items")
+    conn.commit()
+    conn.close()
+    yield
 
 client = TestClient(app)
 

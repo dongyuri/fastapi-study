@@ -1,12 +1,13 @@
 from fastapi.testclient import TestClient
 from main import app
-from app.database import get_connection
+from app.database import get_connection, init_db
 import pytest
 
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_db():
+    init_db()                    # 테이블 생성
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM users")
