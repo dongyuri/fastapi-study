@@ -1,0 +1,32 @@
+
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-lattest
+
+  steps:
+    - name: 저장소 체크아웃
+      uses: actions/checkout@v4
+
+    - name: uv 설치
+      uses: astral-sh/setup-uv@v5
+
+    - name: Python 설치
+      run: uv python install 3.13
+
+    - name: 의존성 설치
+      run: uv sync
+
+    - name: 테스트 실행
+      run: uv run pytest app/tests/ -v
+
+
