@@ -26,4 +26,6 @@ jobs:
         run: uv sync
 
       - name: Run tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: uv run pytest app/tests/ -v
