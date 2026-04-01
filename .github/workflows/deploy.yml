@@ -58,6 +58,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/fastapi-study
+            touch fastapi.db
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-study:latest
