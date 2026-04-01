@@ -1,0 +1,10 @@
+services:
+  api:
+    image: ${DOCKERHUB_USERNAME}/fastapi-study:latest
+    container_name: fastapi-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fastapi.db:/app/fastapi.db
+    env_file:
+      - .env
